@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سباق الولد</title>
+</head>
+<body>
+  <h1 style="text-align:center">🏃‍♂️ سباق الولد</h1>
+  <canvas id="gameCanvas" width="800" height="500" style="border:1px solid #000;display:block;margin:0 auto;"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const playerImg = new Image();
+    playerImg.src = "assets/player.png";
+    const coinImg = new Image();
+    coinImg.src = "assets/coin.png";
+    const rockImg = new Image();
+    rockImg.src = "assets/rock.png";
+
+    const jumpSound = new Audio("assets/jump.mp3");
+    const coinSound = new Audio("assets/coin.mp3");
+    const hitSound = new Audio("assets/hit.mp3");
+
+    let player = {x: 100, y: 350, w: 80, h: 100, vy:0, jumping:false};
+    let coins = [{x:500,y:350,w:40,h:40}];
+    let rocks = [{x:700,y:360,w:60,h:60}];
+    let score = 0;
+    let gravity = 0.5;
+
+    function update(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+
+      coins.forEach((c,i)=>{
+        c.x -= 5;
+        ctx.drawImage(coinImg,c.x,c.y,c.w,c.h);
+        if(c.x<player.x+player.w && c.x+c.w>player.x && c.y<player.y+player.h && c.y+c.h>player.y){
+          score++;
+          coinSound.play();
+          coins.splice(i,1);
+          coins.push({x:canvas.width+200,y:350,w:40,h:40});
+        }
+      });
+
+      rocks.forEach((r,i)=>{
+        r.x -= 6;
+        ctx.drawImage(rockImg,r.x,r.y,r.w,r.h);
+        if(r.x<player.x+player.w && r.x+r.w>player.x && r.y<player.y+player.h && r.y+r.h>player.y){
+          hitSound.play();
+          alert("Game Over! نقاطك: "+score);
+          document.location.reload();
+        }
+      });
+
+      // القفز
+      if(player.jumping){
+        player.vy += gravity;
+        player.y += player.vy;
+        if(player.y>=350){
+          player.y=350;
+          player.jumping=false;
+          player.vy=0;
+        }
+      }
+
+      ctx.fillText("النقاط: "+score,10,20);
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener("keydown", e=>{
+      if(e.code==="Space" && !player.jumping){
+        player.jumping=true;
+        player.vy=-10;
+        jumpSound.play();
+      }
+    });
+
+    update();
+  </script>
+</body>
+</html>
